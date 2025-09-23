@@ -73,15 +73,20 @@ def verify_consistency(hasher, size1, size2, proof, root1, root2):
     mask = (size1 - 1) >> shift
     hash1 = chain_inner_right(hasher, seed, bytearray_proof[:inner], mask)
     hash1 = chain_border_right(hasher, hash1, bytearray_proof[inner:])
-    verify_match(hash1, root1)
+    verify1 = verify_match(hash1, root1)
 
     hash2 = chain_inner(hasher, seed, bytearray_proof[:inner], mask)
     hash2 = chain_border_right(hasher, hash2, bytearray_proof[inner:])
-    verify_match(hash2, root2)
+    verify2 = verify_match(hash2, root2)
+
+    if verify1 and verify2:
+        print("Consistency verification successful.")
 
 def verify_match(calculated, expected):
     if calculated != expected:
         raise RootMismatchError(expected, calculated)
+    else:
+        return True
 
 def decomp_incl_proof(index, size):
     inner = inner_proof_size(index, size)
@@ -142,7 +147,8 @@ def verify_inclusion(hasher, index, size, leaf_hash, proof, root, debug=False):
     bytearray_root = bytes.fromhex(root)
     bytearray_leaf = bytes.fromhex(leaf_hash)
     calc_root = root_from_inclusion_proof(hasher, index, size, bytearray_leaf, bytearray_proof)
-    verify_match(calc_root, bytearray_root)
+    if verify_match(calc_root, bytearray_root):
+        print("Offline root hash calculation for inclusion verified.")
     if debug:
         print("Calculated root hash", calc_root.hex())
         print("Given root hash", bytearray_root.hex())

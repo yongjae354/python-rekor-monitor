@@ -71,12 +71,12 @@ def verify_consistency(hasher, size1, size2, proof, root1, root2):
     bytearray_proof = bytearray_proof[start:]
 
     mask = (size1 - 1) >> shift
-    hash1 = chain_inner_right(hasher, seed, bytearray_proof[:inner], mask)
-    hash1 = chain_border_right(hasher, hash1, bytearray_proof[inner:])
+    inner_hash1 = chain_inner_right(hasher, seed, bytearray_proof[:inner], mask)
+    hash1 = chain_border_right(hasher, inner_hash1, bytearray_proof[inner:])
     verify1 = verify_match(hash1, root1)
 
-    hash2 = chain_inner(hasher, seed, bytearray_proof[:inner], mask)
-    hash2 = chain_border_right(hasher, hash2, bytearray_proof[inner:])
+    inner_hash2 = chain_inner(hasher, seed, bytearray_proof[:inner], mask)
+    hash2 = chain_border_right(hasher, inner_hash2, bytearray_proof[inner:])
     verify2 = verify_match(hash2, root2)
 
     if verify1 and verify2:

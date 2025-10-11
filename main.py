@@ -12,7 +12,7 @@ def get_log_entry(log_index, debug=False):
     # verify that log index value is sane
     url = "https://rekor.sigstore.dev/api/v1/log/entries?logIndex=" + str(log_index)
     try: 
-        r = requests.get(url)
+        r = requests.get(url, timeout=5)
         r.raise_for_status()
     except requests.exceptions.HTTPError as err:
         if r.status_code == 400:
@@ -120,7 +120,8 @@ def inclusion(log_index, artifact_filepath, debug=False):
     return
 
 def get_latest_checkpoint(debug=False):
-    r = requests.get("https://rekor.sigstore.dev/api/v1/log")
+    url = "https://rekor.sigstore.dev/api/v1/log"
+    r = requests.get(url, timeout=5)
     return r.json()
 
 def consistency(prev_checkpoint, debug=False):
@@ -154,7 +155,7 @@ def get_proof(firstTreeSize, lastTreeSize, treeID=None, debug=False):
     url = "https://rekor.sigstore.dev/api/v1/log/proof?firstSize=" + str(firstTreeSize) + "&lastSize=" + str(lastTreeSize) #+ "&treeID=" + str(treeID)
     
     try: 
-        r = requests.get(url)
+        r = requests.get(url, timeout=5)
         r.raise_for_status()
     except requests.exceptions.HTTPError as err:
         if r.status_code == 400:

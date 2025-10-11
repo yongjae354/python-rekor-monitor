@@ -1,4 +1,5 @@
 import argparse
+import binascii
 import json
 import base64
 
@@ -10,11 +11,17 @@ from merkle_proof import DefaultHasher, verify_consistency, verify_inclusion, co
 def get_log_entry(log_index, debug=False):
     # verify that log index value is sane
     url = "https://rekor.sigstore.dev/api/v1/log/entries?logIndex=" + str(log_index)
-    r = requests.get(url)
-
-    if r.status_code == 404:
-        print("log entry not found.")
-        raise SystemExit("Error: Log index is not valid.")
+    try: 
+        r = requests.get(url)
+        r.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        if r.status_code == 400:
+            raise ValueError("Error: The content supplied to the server was invalid.")
+        if r.status_code == 404:
+            print("log entry not found.")
+            raise
+        else:
+            raise RuntimeError(f"Error: HTTP error {err}, status code: {r.status_code}")
     
     log_entry_json = r.json()
     uuid = next(iter(log_entry_json.keys()))
@@ -46,9 +53,20 @@ def inclusion(log_index, artifact_filepath, debug=False):
     body_b64 = get_log_entry_body_b64(log_index, debug)
     
     # decode body > certificate (.pem format)
-    body_bytes = base64.b64decode(body_b64)
-    body_str = body_bytes.decode("utf-8")
-    body_json = json.loads(body_str)
+    try:
+        body_bytes = base64.b64decode(body_b64)
+        body_str = body_bytes.decode("utf-8")
+        body_json = json.loads(body_str)
+    except json.JSONDecodeError as err:
+        print(f"Error: decoding log entry response body failed: {err}")
+        raise
+    except UnicodeDecodeError as err:
+        print(f"Error decoding body bytes using utf-8: {err}")
+        raise
+    except binascii.Error as err:
+        print(f"Error: Invalid argument supplied to b64decode: {err}")
+        raise
+
     if debug:   
         print("Decoded body:", body_str, "\n")
 
@@ -61,17 +79,34 @@ def inclusion(log_index, artifact_filepath, debug=False):
         print("PublicKey:\n", public_key_content, "\n")
 
     # decode signature
-    sig_bytes = base64.b64decode(signature_content)
+    try: 
+        sig_bytes = base64.b64decode(signature_content)
+    except binascii.Error as err:
+        print(f"Error: Invalid argument supplied to b64decode. {err}")
+        raise
 
     # decode pubkey content one more time
-    cert_bytes = base64.b64decode(public_key_content)
-    cert_str = cert_bytes.decode("utf-8")
+    try:
+        cert_bytes = base64.b64decode(public_key_content)
+    except binascii.Error as err:
+        print(f"Error: Invalid argument supplied to b64decode. {err}")
+        raise
+    
+    try:
+        cert_str = cert_bytes.decode("utf-8")
+    except UnicodeDecodeError as err:
+        print(f"Error decoding certificate bytes using utf-8", err)
+        raise
     if debug:
         print("Decoded pubKey Content:\n", cert_str, "\n")
 
     # extract pubkey from cert
     pubkey_bytes = extract_public_key(cert_bytes)
-    pubkey_str = pubkey_bytes.decode("utf-8")
+    try:
+        pubkey_str = pubkey_bytes.decode("utf-8")
+    except UnicodeDecodeError as err:
+        print(f"Error decoding pubkey_bytes using utf-8", err)
+        raise
     if debug: 
         print("pubkey extracted:\n", pubkey_str, "\n")
 

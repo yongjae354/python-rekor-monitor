@@ -117,18 +117,20 @@ def consistency(prev_checkpoint, debug=False):
 
 def get_proof(firstTreeSize, lastTreeSize, treeID=None, debug=False):
     url = "https://rekor.sigstore.dev/api/v1/log/proof?firstSize=" + str(firstTreeSize) + "&lastSize=" + str(lastTreeSize) #+ "&treeID=" + str(treeID)
-    r = requests.get(url)
-
-    if r.status_code == 400:
-        print("could not get proof")
-        raise SystemExit("Error: The content supplied to the server was invalid")
     
-    if r.status_code == 200:
-        response_json = r.json()
-        if debug:
-            print("successfully fetched proof")
-            # print(response_json)
-        return response_json
+    try: 
+        r = requests.get(url)
+        r.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        if r.status_code == 400:
+            raise ValueError("Error: The content supplied to the server was invalid.")
+        else:
+            raise RuntimeError(f"Error: HTTP error {err}, status code: {r.status_code}")
+
+    response_json = r.json()
+    if debug:
+        print("successfully fetched proof")
+    return response_json
 
 def main():
     debug = False

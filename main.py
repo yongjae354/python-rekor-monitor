@@ -2,11 +2,14 @@ import argparse
 import binascii
 import json
 import base64
+import logging
 
 import requests
 
 from util import extract_public_key, verify_artifact_signature
 from merkle_proof import DefaultHasher, verify_consistency, verify_inclusion, compute_leaf_hash
+
+logger = logging.getLogger(__name__)
 
 def get_log_entry(log_index, debug=False):
     # verify that log index value is sane
@@ -18,7 +21,7 @@ def get_log_entry(log_index, debug=False):
         if r.status_code == 400:
             raise ValueError("Error: The content supplied to the server was invalid.")
         if r.status_code == 404:
-            print("log entry not found.")
+            logger.error("log entry not found.")
             raise
         else:
             raise RuntimeError(f"Error: HTTP error {err}, status code: {r.status_code}")
@@ -26,8 +29,8 @@ def get_log_entry(log_index, debug=False):
     log_entry_json = r.json()
     uuid = next(iter(log_entry_json.keys()))
     if debug:
-        print("UUID: ", uuid)
-        print("Log entry: ", log_entry_json, "\n")
+        logger.debug("UUID: %s", uuid)
+        logger.debug("Log entry: %s", log_entry_json)
     
     return uuid, log_entry_json
 
@@ -36,7 +39,7 @@ def get_log_entry_body_b64(log_index, debug=False):
     body_b64 = log_entry_json[uuid]["body"]
 
     if debug:
-        print("Base64 body:", body_b64, "\n")
+        logger.debug("Base64 body:\n%s", body_b64)
 
     return body_b64
 
@@ -45,7 +48,7 @@ def get_verification_proof(log_index, debug=False):
     uuid, log_entry_json = get_log_entry(log_index)
     inclusion_proof = log_entry_json[uuid]["verification"]["inclusionProof"]
     if debug:
-        print("Inclusion proof: ", inclusion_proof, "\n")
+        logger.debug("Inclusion proof: %s", inclusion_proof)
 
     return inclusion_proof
 
@@ -58,60 +61,60 @@ def inclusion(log_index, artifact_filepath, debug=False):
         body_str = body_bytes.decode("utf-8")
         body_json = json.loads(body_str)
     except json.JSONDecodeError as err:
-        print(f"Error: decoding log entry response body failed: {err}")
+        logger.debug(f"Error: decoding log entry response body failed: {err}")
         raise
     except UnicodeDecodeError as err:
-        print(f"Error decoding body bytes using utf-8: {err}")
+        logger.debug(f"Error decoding body bytes using utf-8: {err}")
         raise
     except binascii.Error as err:
-        print(f"Error: Invalid argument supplied to b64decode: {err}")
+        logger.debug(f"Error: Invalid argument supplied to b64decode: {err}")
         raise
 
     if debug:   
-        print("Decoded body:", body_str, "\n")
+        logger.debug("Decoded body: %s", body_str)
 
     # extract signature and pubkey
     signature_content = body_json["spec"]["signature"]["content"]
     public_key_content = body_json["spec"]["signature"]["publicKey"]["content"]
 
     if debug:
-        print("Signature:\n", signature_content, "\n")
-        print("PublicKey:\n", public_key_content, "\n")
+        logger.debug("Signature:\n%s", signature_content)
+        logger.debug("PublicKey:\n%s", public_key_content)
 
     # decode signature
     try: 
         sig_bytes = base64.b64decode(signature_content)
     except binascii.Error as err:
-        print(f"Error: Invalid argument supplied to b64decode. {err}")
+        logger.error(f"Error: Invalid argument supplied to b64decode. {err}")
         raise
 
     # decode pubkey content one more time
     try:
         cert_bytes = base64.b64decode(public_key_content)
     except binascii.Error as err:
-        print(f"Error: Invalid argument supplied to b64decode. {err}")
+        logger.error(f"Error: Invalid argument supplied to b64decode. {err}")
         raise
     
     try:
         cert_str = cert_bytes.decode("utf-8")
     except UnicodeDecodeError as err:
-        print(f"Error decoding certificate bytes using utf-8", err)
+        logger.error("Error decoding certificate bytes using utf-8: %s", err)
         raise
     if debug:
-        print("Decoded pubKey Content:\n", cert_str, "\n")
+        logger.debug("Decoded pubKey Content:\n%s", cert_str)
 
     # extract pubkey from cert
     pubkey_bytes = extract_public_key(cert_bytes)
     try:
         pubkey_str = pubkey_bytes.decode("utf-8")
     except UnicodeDecodeError as err:
-        print(f"Error decoding pubkey_bytes using utf-8", err)
+        logger.error("Error decoding pubkey_bytes using utf-8: %s", err)
         raise
     if debug: 
-        print("pubkey extracted:\n", pubkey_str, "\n")
+        logger.debug("pubkey extracted:\n%s", pubkey_str)
 
     if verify_artifact_signature(sig_bytes, pubkey_bytes, artifact_filepath):
-        print("Signature is valid.")
+        logger.debug("Signature is valid.")
 
     inclusion_proof = get_verification_proof(log_index, debug)
     leaf_hash = compute_leaf_hash(body_b64)
@@ -138,15 +141,15 @@ def consistency(prev_checkpoint, debug=False):
     root2 = latest_checkpoint["rootHash"]
 
     if debug:
-        print("Prev Checkpoint")
-        print("treeSize: ", prev_checkpoint["treeSize"])
-        print("rootHash: ", prev_checkpoint["rootHash"])
-        print("rootHash: ", root1)
+        logger.debug("Prev Checkpoint")
+        logger.debug("treeSize: %s", prev_checkpoint["treeSize"])
+        logger.debug("rootHash: %s", prev_checkpoint["rootHash"])
+        logger.debug("rootHash: %s", root1)
 
-        print("Latest Checkpoint")
-        print("treesize: ", latest_checkpoint["treeSize"])
-        print("rootHash: ", latest_checkpoint["rootHash"])
-        print("rootHash: ", root2)
+        logger.debug("Latest Checkpoint")
+        logger.debug("treesize: %s", latest_checkpoint["treeSize"])
+        logger.debug("rootHash: %s", latest_checkpoint["rootHash"])
+        logger.debug("rootHash: %s", root2)
 
     verify_consistency(DefaultHasher, int(prev_checkpoint["treeSize"]), int(latest_checkpoint["treeSize"]), proof_hashes, root1, root2)
     return
@@ -165,7 +168,7 @@ def get_proof(firstTreeSize, lastTreeSize, treeID=None, debug=False):
 
     response_json = r.json()
     if debug:
-        print("successfully fetched proof")
+        logger.debug("successfully fetched proof")
     return response_json
 
 def main():
@@ -196,7 +199,8 @@ def main():
     args = parser.parse_args()
     if args.debug:
         debug = True
-        print("enabled debug mode")
+        logging.basicConfig(level=logging.DEBUG)
+        logger.debug("enabled debug mode")
     if args.checkpoint:
         # get and print latest checkpoint from server
         # if debug is enabled, store it in a file checkpoint.json
@@ -206,13 +210,13 @@ def main():
         inclusion(args.inclusion, args.artifact, debug)
     if args.consistency:
         if not args.tree_id:
-            print("please specify tree id for prev checkpoint")
+            logger.error("please specify tree id for prev checkpoint")
             return
         if not args.tree_size:
-            print("please specify tree size for prev checkpoint")
+            logger.error("please specify tree size for prev checkpoint")
             return
         if not args.root_hash:
-            print("please specify root hash for prev checkpoint")
+            logger.error("please specify root hash for prev checkpoint")
             return
 
         prev_checkpoint = {}

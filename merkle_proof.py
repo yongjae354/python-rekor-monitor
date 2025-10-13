@@ -1,6 +1,9 @@
 import hashlib
 import binascii
 import base64
+import logging
+
+logger = logging.getLogger(__name__)
 
 # domain separation prefixes according to the RFC
 RFC6962_LEAF_HASH_PREFIX = 0
@@ -149,8 +152,8 @@ def verify_inclusion(hasher, index, size, leaf_hash, proof, root, debug=False):
     if verify_match(calc_root, bytearray_root):
         print("Offline root hash calculation for inclusion verified.")
     if debug:
-        print("Calculated root hash", calc_root.hex())
-        print("Given root hash", bytearray_root.hex())
+        logger.debug("Calculated root hash %s", calc_root.hex())
+        logger.debug("Given root hash %s", bytearray_root.hex())
 
 # requires entry["body"] output for a log entry
 # returns the leaf hash according to the rfc 6962 spec

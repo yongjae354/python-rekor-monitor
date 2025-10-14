@@ -1,3 +1,5 @@
+"""Util functions for handling cryptographic verification"""
+
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -8,37 +10,55 @@ from cryptography.hazmat.primitives.serialization import load_pem_public_key
 from cryptography.exceptions import InvalidSignature
 
 
-# extracts and returns public key from a given cert (in pem format)
 def extract_public_key(cert):
-# read the certificate
-#    with open("cert.pem", "rb") as cert_file:
-#        cert_data = cert_file.read()
+    """Extract and return public key bytes from a given certificate (in pem format)
 
-# load the certificate
+    Args:
+        cert (bytes): The certificate in pem format.
+
+    Returns:
+        bytes: The public key bytes.
+    """
+    # read the certificate
+    #    with open("cert.pem", "rb") as cert_file:
+    #        cert_data = cert_file.read()
+
+    # load the certificate
     certificate = x509.load_pem_x509_certificate(cert, default_backend())
 
-# extract the public key
+    # extract the public key
     public_key = certificate.public_key()
 
-# save the public key to a PEM file
-#    with open("cert_public.pem", "wb") as pub_key_file:
-#        pub_key_file.write(public_key.public_bytes(
-#            encoding=serialization.Encoding.PEM,
-#            format=serialization.PublicFormat.SubjectPublicKeyInfo
-#        ))
+    # save the public key to a PEM file
+    #    with open("cert_public.pem", "wb") as pub_key_file:
+    #        pub_key_file.write(public_key.public_bytes(
+    #            encoding=serialization.Encoding.PEM,
+    #            format=serialization.PublicFormat.SubjectPublicKeyInfo
+    #        ))
     pem_public_key = public_key.public_bytes(
         encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
     )
 
     return pem_public_key
 
+
 def verify_artifact_signature(signature, public_key, artifact_filename):
+    """Verify the given signature with public key and artifact data.
+
+    Args:
+        signature (bytes): Signature to verify.
+        public_key (bytes): Public Key used for verification.
+        artifact_filename (str): Path to the file containing the data that was signed.
+
+    Returns:
+        bool: True if the signature verification is valid. Otherwise False.
+    """
     # load the public key
     # with open("cert_public.pem", "rb") as pub_key_file:
     #    public_key = load_pem_public_key(pub_key_file.read())
 
-        # load the signature
+    # load the signature
     #    with open("hello.sig", "rb") as sig_file:
     #        signature = sig_file.read()
 
@@ -49,15 +69,11 @@ def verify_artifact_signature(signature, public_key, artifact_filename):
 
     # verify the signature
     try:
-        public_key.verify(
-            signature,
-            data,
-            ec.ECDSA(hashes.SHA256())
-        )
+        public_key.verify(signature, data, ec.ECDSA(hashes.SHA256()))
         return True
-    except InvalidSignature as e:
+    except InvalidSignature:
         print("Signature is invalid")
         return False
     except Exception as e:
         print("Exception in verifying artifact signature:", e)
-        return False
+        raise

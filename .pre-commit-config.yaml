@@ -1,0 +1,10 @@
+repos:
+  - repo: local
+    hooks:
+      - id: trufflehog
+        name: TruffleHog
+        description: Detect staged secrets.
+        entry: trufflehog filesystem
+        args: [--no-verification, --fail]
+        language: system
+        stages: ["pre-commit"]

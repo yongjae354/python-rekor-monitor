@@ -10,8 +10,8 @@ import logging
 
 import requests
 
-from util import extract_public_key, verify_artifact_signature
-from merkle_proof import (
+from python_rekor_monitor.util import extract_public_key, verify_artifact_signature
+from python_rekor_monitor.merkle_proof import (
     DEFAULT_HASHER,
     verify_consistency,
     verify_inclusion,

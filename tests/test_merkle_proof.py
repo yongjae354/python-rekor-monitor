@@ -4,7 +4,7 @@ import base64
 import hashlib
 import pytest
 from unittest.mock import patch, MagicMock
-import merkle_proof
+from python_rekor_monitor import merkle_proof
 
 
 class TestBytearrayFromHashes:
@@ -251,10 +251,10 @@ class TestRootFromInclusionProof:
 
 
 class TestVerifyInclusion:
-    @patch("merkle_proof.logger")
-    @patch("merkle_proof.verify_match")
-    @patch("merkle_proof.root_from_inclusion_proof")
-    @patch("merkle_proof._bytearray_from_hashes")
+    @patch("python_rekor_monitor.merkle_proof.logger")
+    @patch("python_rekor_monitor.merkle_proof.verify_match")
+    @patch("python_rekor_monitor.merkle_proof.root_from_inclusion_proof")
+    @patch("python_rekor_monitor.merkle_proof._bytearray_from_hashes")
     def test_verify_inclusion_success(
         self, mock_from_hashes, mock_root_from_inclusion, mock_verify_match, mock_logger
     ):
@@ -294,13 +294,13 @@ class TestVerifyInclusion:
 
 
 class TestVerifyConsistency:
-    @patch("merkle_proof.verify_match", return_value=True)
-    @patch("merkle_proof.chain_inner", return_value=b"h2")
-    @patch("merkle_proof.chain_inner_right", return_value=b"h1_inner")
-    @patch("merkle_proof.chain_border_right", side_effect=[b"final1", b"final2"])
-    @patch("merkle_proof._compute_layout_for_consistency_verification")
-    @patch("merkle_proof._validate_treesizes_and_proof")
-    @patch("merkle_proof._bytearray_from_hashes")
+    @patch("python_rekor_monitor.merkle_proof.verify_match", return_value=True)
+    @patch("python_rekor_monitor.merkle_proof.chain_inner", return_value=b"h2")
+    @patch("python_rekor_monitor.merkle_proof.chain_inner_right", return_value=b"h1_inner")
+    @patch("python_rekor_monitor.merkle_proof.chain_border_right", side_effect=[b"final1", b"final2"])
+    @patch("python_rekor_monitor.merkle_proof._compute_layout_for_consistency_verification")
+    @patch("python_rekor_monitor.merkle_proof._validate_treesizes_and_proof")
+    @patch("python_rekor_monitor.merkle_proof._bytearray_from_hashes")
     def test_verify_consistency_success(
         self,
         mock_from_hashes,

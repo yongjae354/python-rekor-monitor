@@ -1,16 +1,21 @@
-[tool.poetry]
-name = "python-rekor-monitor"
+[project]
+name = "python_rekor_monitor"
 version = "3.0"
 description = "A Python monitor for Sigstore's Rekor transparency log."
-authors = ["Yongjae Chung <yc3028@nyu.edu>"]
+authors = [
+    { name = "Yongjae Chung", email = "yc3028@nyu.edu" },
+]
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.13"
 packages = [{ include = "src" }]
 
-[tool.poetry.dependencies]
-python = ">=3.13"
-cryptography = "3.4.8"
-requests = "2.32.5"
-types-requests = "2.32.4.20250913"
+dependencies = [
+    "cryptography (==3.4.8)",
+    "requests (==2.32.5)",
+    "types-requests (==2.32.4.20250913)",
+]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -18,15 +23,15 @@ build-backend = "poetry.core.masonry.api"
 
 [dependency-groups]
 dev = [
-    "mypy (>=1.18.2,<2.0.0)",
-    "ruff (>=0.14.4,<0.15.0)",
-    "pylint (>=4.0.2,<5.0.0)",
-    "bandit (>=1.8.6,<2.0.0)",
-    "autodocstring (>=0.1.2,<0.2.0)",
-    "pytest (>=9.0.0,<10.0.0)",
-    "pytest-cov (>=7.0.0,<8.0.0)",
-    "jsonschema (>=4.25.1,<5.0.0)",
-    "responses (>=0.25.8,<0.26.0)"
+    "mypy>=1.18.2,<2.0.0",
+    "ruff>=0.14.4,<0.15.0",
+    "pylint>=4.0.2,<5.0.0",
+    "bandit>=1.8.6,<2.0.0",
+    "autodocstring>=0.1.2,<0.2.0",
+    "pytest>=9.0.0,<10.0.0",
+    "pytest-cov>=7.0.0,<8.0.0",
+    "jsonschema>=4.25.1,<5.0.0",
+    "responses>=0.25.8,<0.26.0",
 ]
 
 [tool.bandit]
@@ -40,3 +45,6 @@ addopts = "-q -ra"
 [tool.coverage.run]
 command_line = "-m pytest"
 source = ["src"]
+
+[project.scripts]
+python_rekor_monitor = 'python_rekor_monitor.main:main'

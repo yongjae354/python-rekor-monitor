@@ -7,7 +7,7 @@ from cryptography import x509
 from cryptography.x509.oid import NameOID
 import datetime
 
-from python_rekor_monitor import util
+from rekor_monitor_nyu_sscs import util
 
 
 def create_self_signed_cert():

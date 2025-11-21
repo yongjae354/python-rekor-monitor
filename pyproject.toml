@@ -1,6 +1,6 @@
 [project]
-name = "python_rekor_monitor"
-version = "3.0"
+name = "rekor_monitor_nyu_sscs"
+version = "4.0"
 description = "A Python monitor for Sigstore's Rekor transparency log."
 authors = [
     { name = "Yongjae Chung", email = "yc3028@nyu.edu" },
@@ -47,4 +47,4 @@ command_line = "-m pytest"
 source = ["src"]
 
 [project.scripts]
-python_rekor_monitor = 'python_rekor_monitor.main:main'
+rekor_monitor_nyu_sscs = 'rekor_monitor_nyu_sscs.main:main'

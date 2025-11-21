@@ -10,8 +10,8 @@ import logging
 
 import requests
 
-from python_rekor_monitor.util import extract_public_key, verify_artifact_signature
-from python_rekor_monitor.merkle_proof import (
+from rekor_monitor_nyu_sscs.util import extract_public_key, verify_artifact_signature
+from rekor_monitor_nyu_sscs.merkle_proof import (
     DEFAULT_HASHER,
     verify_consistency,
     verify_inclusion,

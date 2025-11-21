@@ -11,7 +11,7 @@ import responses
 import pytest
 from unittest.mock import patch, Mock, mock_open, MagicMock
 
-from python_rekor_monitor import main
+from rekor_monitor_nyu_sscs import main
 
 checkpoint_schema = {
     "type": "object",
@@ -31,7 +31,7 @@ def test_checkpoint():
     env["PYTHONPATH"] = "src"
 
     result = subprocess.run(
-        ["python", "-m", "python_rekor_monitor.main", "-c"],  # Run as module
+        ["python", "-m", "rekor_monitor_nyu_sscs.main", "-c"],  # Run as module
         capture_output=True,
         text=True,
         env=env,
@@ -168,10 +168,10 @@ class TestInclusion:
     """Tests for the inclusion function"""
 
     @responses.activate
-    @patch("python_rekor_monitor.main.verify_inclusion")
-    @patch("python_rekor_monitor.main.compute_leaf_hash")
-    @patch("python_rekor_monitor.main.verify_artifact_signature")
-    @patch("python_rekor_monitor.main.parse_log_entry")
+    @patch("rekor_monitor_nyu_sscs.main.verify_inclusion")
+    @patch("rekor_monitor_nyu_sscs.main.compute_leaf_hash")
+    @patch("rekor_monitor_nyu_sscs.main.verify_artifact_signature")
+    @patch("rekor_monitor_nyu_sscs.main.parse_log_entry")
     def test_inclusion_success(
         self,
         mock_parse_log_entry,
@@ -245,10 +245,10 @@ class TestInclusion:
         )
 
 
-@patch("python_rekor_monitor.main.extract_public_key")
-@patch("python_rekor_monitor.main.logger")
-@patch("python_rekor_monitor.main.base64.b64decode")
-@patch("python_rekor_monitor.main.json.loads")
+@patch("rekor_monitor_nyu_sscs.main.extract_public_key")
+@patch("rekor_monitor_nyu_sscs.main.logger")
+@patch("rekor_monitor_nyu_sscs.main.base64.b64decode")
+@patch("rekor_monitor_nyu_sscs.main.json.loads")
 def test_parse_log_entry_success(
     mock_json_loads, mock_b64decode, mock_logger, mock_extract_public_key
 ):
@@ -308,10 +308,10 @@ class TestGetProof:
 
 
 class TestConsistency:
-    @patch("python_rekor_monitor.main.verify_consistency")
-    @patch("python_rekor_monitor.main.get_proof")
-    @patch("python_rekor_monitor.main.get_latest_checkpoint")
-    @patch("python_rekor_monitor.main.logger")
+    @patch("rekor_monitor_nyu_sscs.main.verify_consistency")
+    @patch("rekor_monitor_nyu_sscs.main.get_proof")
+    @patch("rekor_monitor_nyu_sscs.main.get_latest_checkpoint")
+    @patch("rekor_monitor_nyu_sscs.main.logger")
     def test_consistency_success(
         self,
         mock_logger,
@@ -348,7 +348,7 @@ class TestConsistency:
             main.consistency(prev_checkpoint)
 
 
-@patch("python_rekor_monitor.main.get_latest_checkpoint")
+@patch("rekor_monitor_nyu_sscs.main.get_latest_checkpoint")
 def test_main_checkpoint(mock_get_latest_checkpoint):
     mock_get_latest_checkpoint.return_value = {"treeSize": 100, "rootHash": "abc123"}
 

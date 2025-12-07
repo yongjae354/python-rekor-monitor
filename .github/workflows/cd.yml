@@ -1,0 +1,54 @@
+name: CD workflow
+
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write
+  attestations: write
+  id-token: write
+      
+jobs:
+  cd:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with: 
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          virtualenvs-path: .venv
+          installer-parallel: true
+      
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-root
+
+      - name: Build wheel
+        run: poetry build
+
+      - name: Generate CycloneDX SBOM
+        run: poetry run cyclonedx-py environment "$(poetry env info --executable)" -o cyclonedx-sbom.json
+    
+      - name: Attest SBOM
+        uses: actions/attest-sbom@v3
+        with:
+            subject-path: 'dist/*.whl'
+            sbom-path: 'cyclonedx-sbom.json'
+    
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: cyclonedx-sbom.json
+    
+      - name: Release on GitHub
+        uses: softprops/action-gh-release@v2

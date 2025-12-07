@@ -11,7 +11,7 @@ permissions:
   id-token: write
       
 jobs:
-  ci:
+  cd:
     runs-on: ubuntu-latest
 
     steps:
@@ -35,9 +35,6 @@ jobs:
       - name: Build wheel
         run: poetry build
 
-      - name: Release on GitHub
-        uses: softprops/action-gh-release@v2
-
       - name: Generate CycloneDX SBOM
         run: poetry run cyclonedx-py poetry -o cyclonedx-sbom.json
     
@@ -52,3 +49,6 @@ jobs:
         with:
           name: sbom
           path: cyclonedx-sbom.json
+    
+      - name: Release on GitHub
+        uses: softprops/action-gh-release@v2

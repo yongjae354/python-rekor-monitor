@@ -36,7 +36,7 @@ jobs:
         run: poetry build
 
       - name: Generate CycloneDX SBOM
-        run: poetry run cyclonedx-py poetry -o cyclonedx-sbom.json
+        run: poetry run cyclonedx-py environment "$(poetry env info --executable)" -o cyclonedx-sbom.json
     
       - name: Attest SBOM
         uses: actions/attest-sbom@v3

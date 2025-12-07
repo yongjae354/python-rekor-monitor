@@ -2,6 +2,7 @@
 A python monitor for Sigstore's transparency log, Rekor. This project was
 developed as part of NYU's Software Supply Chain Security class.
 """
+
 import argparse
 import binascii
 import json
@@ -44,11 +45,15 @@ def get_log_entry(log_index, debug=False):
         r.raise_for_status()
     except requests.exceptions.HTTPError as err:
         if r.status_code == 400:
-            raise ValueError("Error: The content supplied to the server was invalid.") from err
+            raise ValueError(
+                "Error: The content supplied to the server was invalid."
+            ) from err
         if r.status_code == 404:
             logger.error("log entry not found.")
             raise
-        raise RuntimeError(f"Error: HTTP error {err}, status code: {r.status_code}") from err
+        raise RuntimeError(
+            f"Error: HTTP error {err}, status code: {r.status_code}"
+        ) from err
 
     log_entry_json = r.json()
     uuid = next(iter(log_entry_json.keys()))
@@ -94,6 +99,7 @@ def get_verification_proof(log_index, debug=False):
         logger.debug("Inclusion proof: %s", inclusion_proof)
 
     return inclusion_proof
+
 
 def parse_log_entry(body_b64: str, debug=False):
     """Extract signature bytes and public key bytes from a log entry body.
@@ -162,6 +168,7 @@ def parse_log_entry(body_b64: str, debug=False):
         logger.debug("pubkey extracted:\n%s", pubkey_str)
 
     return sig_bytes, pubkey_bytes
+
 
 def inclusion(log_index, artifact_filepath, debug=False):
     """Verifiy inclusion of the specified entry, and the corresponding artifact
@@ -244,6 +251,7 @@ def consistency(prev_checkpoint, debug=False):
         (root1, root2),
     )
 
+
 def get_proof(first_tree_size, last_tree_size, debug=False):
     """Fetch a consistency proof from the Rekor log, given two tree sizes.
 
@@ -273,8 +281,12 @@ def get_proof(first_tree_size, last_tree_size, debug=False):
         r.raise_for_status()
     except requests.exceptions.HTTPError as err:
         if r.status_code == 400:
-            raise ValueError("Error: The content supplied to the server was invalid.") from err
-        raise RuntimeError(f"Error: HTTP error {err}, status code: {r.status_code}") from err
+            raise ValueError(
+                "Error: The content supplied to the server was invalid."
+            ) from err
+        raise RuntimeError(
+            f"Error: HTTP error {err}, status code: {r.status_code}"
+        ) from err
 
     response_json = r.json()
     if debug:

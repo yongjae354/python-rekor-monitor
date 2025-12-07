@@ -29,7 +29,9 @@ def create_self_signed_cert():
         .public_key(key.public_key())
         .serial_number(x509.random_serial_number())
         .not_valid_before(datetime.datetime.now(datetime.UTC))
-        .not_valid_after(datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=10))
+        .not_valid_after(
+            datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=10)
+        )
         .sign(private_key=key, algorithm=hashes.SHA256())
     )
 

@@ -1,4 +1,5 @@
 """Helper functions for performing verifications on a merkle tree."""
+
 import hashlib
 import binascii
 import base64
@@ -13,11 +14,12 @@ RFC6962_NODE_HASH_PREFIX = 1
 
 class Hasher:
     """Class for hashing tree objects."""
+
     def __init__(self, hash_func=hashlib.sha256):
         self.hash_func = hash_func
 
     def new(self):
-        """Return a new instance of the default hash function. 
+        """Return a new instance of the default hash function.
         By default, it uses hashlib.sha256.
         """
         return self.hash_func()
@@ -44,8 +46,10 @@ class Hasher:
         """Return the digest size of hash function."""
         return self.new().digest_size
 
+
 # DEFAULT_HASHER is a SHA256 based LogHasher
 DEFAULT_HASHER = Hasher(hashlib.sha256)
+
 
 def verify_consistency(hasher, tree_sizes, proof, root_hashes):
     """Verify the consistency of the merkle tree between two checkpoints.
@@ -107,20 +111,20 @@ def decomp_incl_proof(index, size):
     This function calculates the number of inner nodes and border nodes required
     for a merkle inclusion proof at a given index position in a tree of
     specified size.
-    
-    Note: 
+
+    Note:
     During upward reconstruction of the root, The inner nodes are node required
     until the current node becomes a node at the right border. From that point,
     its sibling node is always going to be a left sibling. Border nodes are
     nodes that are left (to reconstruct the root) once that current node becomes
     a node at the right border.
-    
+
     Inner = siblings before reaching right edge (mixed left/right behavior)
     Border = “on the right-edge upward” siblings (always attach as left sibling
     with you on the right).
 
     Example:
-        >>> decomp_incl_proof(4, 7)  
+        >>> decomp_incl_proof(4, 7)
         (2, 1)  # 2 inner nodes and 1 border node needed for proof
 
     * This Docstring was written with ChatGPT assistance.
@@ -148,7 +152,7 @@ def chain_inner(hasher, seed, proof, index):
 
     Starting from a single leaf hash (`seed`), walk up the tree one level at
     a time. For each sibling hash in `proof`, check whether the current node
-    was on the left or right side. 
+    was on the left or right side.
 
     * This Docstring was written with ChatGPT assistance.
     """
@@ -179,7 +183,7 @@ def chain_border_right(hasher, seed, proof):
     the path was reached the tree's right border. At this point, all the
     remianing steps only require chaining hashes where the current node is the
     RIGHT child.
-    
+
     * This Docstring was written with ChatGPT assistance.
     """
     for h in proof:
@@ -191,6 +195,7 @@ class RootMismatchError(Exception):
     """An exception class indicating a mismatch between the given and calculated
     roots in a merkle proof.
     """
+
     def __init__(self, expected_root, calculated_root):
         self.expected_root = binascii.hexlify(bytearray(expected_root))
         self.calculated_root = binascii.hexlify(bytearray(calculated_root))
@@ -212,7 +217,9 @@ def root_from_inclusion_proof(hasher, index, size, leaf_hash, proof):
         raise ValueError(f"index is beyond size: {index} >= {size}")
 
     if len(leaf_hash) != hasher.size():
-        raise ValueError(f"leaf_hash has unexpected size {len(leaf_hash)}, want {hasher.size()}")
+        raise ValueError(
+            f"leaf_hash has unexpected size {len(leaf_hash)}, want {hasher.size()}"
+        )
 
     inner, border = decomp_incl_proof(index, size)
     if len(proof) != inner + border:
@@ -236,7 +243,7 @@ def verify_inclusion(hasher, inclusion_proof, leaf_hash, debug=False):
         inclusion_proof["treeSize"],
         bytearray_leaf,
         bytearray_proof,
-        )
+    )
     if verify_match(calc_root, bytearray_root):
         print("Offline root hash calculation for inclusion verified.")
     if debug:
@@ -261,18 +268,24 @@ def compute_leaf_hash(body):
     # return the computed hash
     return h.hexdigest()
 
+
 def _bytearray_from_hashes(hashes):
     bytearray_proof = []
     for elem in hashes:
         bytearray_proof.append(bytes.fromhex(elem))
     return bytearray_proof
 
+
 def _validate_treesizes_and_proof(tree_sizes, bytearray_proof):
     if tree_sizes[1] < tree_sizes[0]:
-        raise ValueError(f"tree_sizes[1] ({tree_sizes[1]}) < tree_sizes[0] ({tree_sizes[0]})")
+        raise ValueError(
+            f"tree_sizes[1] ({tree_sizes[1]}) < tree_sizes[0] ({tree_sizes[0]})"
+        )
     if tree_sizes[0] == tree_sizes[1]:
         if bytearray_proof:
-            raise ValueError("tree_sizes[0]=tree_sizes[1], but bytearray_proof is not empty")
+            raise ValueError(
+                "tree_sizes[0]=tree_sizes[1], but bytearray_proof is not empty"
+            )
         # verify_match(root_hashes[0], root_hashes[1])
         return
     if tree_sizes[0] == 0:
@@ -284,7 +297,10 @@ def _validate_treesizes_and_proof(tree_sizes, bytearray_proof):
     if not bytearray_proof:
         raise ValueError("empty bytearray_proof")
 
-def _compute_layout_for_consistency_verification(size1, size2, root1_bytes, proof_nodes):
+
+def _compute_layout_for_consistency_verification(
+    size1, size2, root1_bytes, proof_nodes
+):
     inner, border = decomp_incl_proof(size1 - 1, size2)
     shift = (size1 & -size1).bit_length() - 1
     inner -= shift
@@ -295,8 +311,10 @@ def _compute_layout_for_consistency_verification(size1, size2, root1_bytes, proo
         seed, start = proof_nodes[0], 1
 
     if len(proof_nodes) != start + inner + border:
-        raise ValueError(f"wrong bytearray_proof size {len(proof_nodes)},"
-                         f"want {start + inner + border}")
+        raise ValueError(
+            f"wrong bytearray_proof size {len(proof_nodes)},"
+            f"want {start + inner + border}"
+        )
 
     remaining = proof_nodes[start:]
 

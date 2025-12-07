@@ -296,9 +296,17 @@ class TestVerifyInclusion:
 class TestVerifyConsistency:
     @patch("rekor_monitor_nyu_sscs.merkle_proof.verify_match", return_value=True)
     @patch("rekor_monitor_nyu_sscs.merkle_proof.chain_inner", return_value=b"h2")
-    @patch("rekor_monitor_nyu_sscs.merkle_proof.chain_inner_right", return_value=b"h1_inner")
-    @patch("rekor_monitor_nyu_sscs.merkle_proof.chain_border_right", side_effect=[b"final1", b"final2"])
-    @patch("rekor_monitor_nyu_sscs.merkle_proof._compute_layout_for_consistency_verification")
+    @patch(
+        "rekor_monitor_nyu_sscs.merkle_proof.chain_inner_right",
+        return_value=b"h1_inner",
+    )
+    @patch(
+        "rekor_monitor_nyu_sscs.merkle_proof.chain_border_right",
+        side_effect=[b"final1", b"final2"],
+    )
+    @patch(
+        "rekor_monitor_nyu_sscs.merkle_proof._compute_layout_for_consistency_verification"
+    )
     @patch("rekor_monitor_nyu_sscs.merkle_proof._validate_treesizes_and_proof")
     @patch("rekor_monitor_nyu_sscs.merkle_proof._bytearray_from_hashes")
     def test_verify_consistency_success(

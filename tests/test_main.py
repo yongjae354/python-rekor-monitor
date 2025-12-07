@@ -9,7 +9,7 @@ import subprocess
 import requests
 import responses
 import pytest
-from unittest.mock import patch, Mock, mock_open, MagicMock
+from unittest.mock import patch
 
 from rekor_monitor_nyu_sscs import main
 
@@ -80,7 +80,7 @@ mock_checkpoint = {
 def test_get_latest_checkpoint():
     responses.add(
         responses.GET,
-        f"https://rekor.sigstore.dev/api/v1/log",
+        "https://rekor.sigstore.dev/api/v1/log",
         json=mock_checkpoint,
         status=200,
     )

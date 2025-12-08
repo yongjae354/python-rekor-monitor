@@ -1,4 +1,5 @@
 [![Build Status](https://github.com/yongjae354/python-rekor-monitor/actions/workflows/cd.yml/badge.svg)](https://github.com/yongjae354/python-rekor-monitor/actions/workflows/cd.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/yongjae354/python-rekor-monitor/badge)](https://scorecard.dev/viewer/?uri=github.com/yongjae354/python-rekor-monitor)
 
 # Python Rekor Monitor
 

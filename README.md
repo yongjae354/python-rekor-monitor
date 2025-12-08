@@ -1,3 +1,5 @@
+[![Build Status](https://github.com/yongjae354/python-rekor-monitor/actions/workflows/cd.yml/badge.svg)](https://github.com/yongjae354/python-rekor-monitor/actions/workflows/cd.yml)
+
 # Python Rekor Monitor
 
 This is a python monitor for Sigstore's transparency log, [Rekor](https://docs.sigstore.dev/logging/overview/). This project was developed as part of NYU's Software Supply Chain Security class.

@@ -55,10 +55,3 @@ jobs:
       - name: Run testing and coverage
         run: poetry run pytest --cov=src --cov-report=xml --cov-report=term
         continue-on-error: true
-
-
-
-
-
-
-
